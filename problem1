@@ -1,0 +1,268 @@
+from collections import deque
+
+
+# ============================================================
+# Problem 1: BFS vs. DFS Implementation and Analysis
+# ============================================================
+
+
+# ------------------------------------------------------------
+# Part A & B: BFS and DFS on the Graph
+#
+# Graph from the assignment:
+#
+#       A
+#        \
+#         B
+#        / \
+#       C   D
+#       |   |
+#       E   F
+#
+# Goal: Find a path from A to E
+# ------------------------------------------------------------
+
+graph = {
+    'A': ['B'],
+    'B': ['C', 'D'],
+    'C': ['E'],
+    'D': ['F'],
+    'E': [],
+    'F': []
+}
+
+
+def bfs_graph(graph, start, goal):
+    queue = deque([(start, [start])])
+    visited = set()
+    traversal = []
+
+    while queue:
+        node, path = queue.popleft()
+
+        if node in visited:
+            continue
+
+        visited.add(node)
+        traversal.append(node)
+
+        if node == goal:
+            return path, traversal
+
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                queue.append((neighbor, path + [neighbor]))
+
+    return None, traversal
+
+
+def dfs_graph(graph, start, goal):
+    stack = [(start, [start])]
+    visited = set()
+    traversal = []
+
+    while stack:
+        node, path = stack.pop()
+
+        if node in visited:
+            continue
+
+        visited.add(node)
+        traversal.append(node)
+
+        if node == goal:
+            return path, traversal
+
+        # Reverse keeps the left-most neighbor first
+        for neighbor in reversed(graph[node]):
+            if neighbor not in visited:
+                stack.append((neighbor, path + [neighbor]))
+
+    return None, traversal
+
+
+# ------------------------------------------------------------
+# Part C & D: BFS and DFS on the Grid
+#
+# 0 = open space
+# 1 = blocked space
+#
+# Grid is based on the grid shown in the assignment.
+# A is the starting position.
+# B is the goal.
+# ------------------------------------------------------------
+
+grid = [
+    [1, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 0],
+    [1, 0, 0, 0, 0, 0],
+    [1, 0, 1, 1, 0, 0],
+    [1, 0, 1, 0, 0, 0],
+    [0, 1, 1, 0, 0, 0]
+]
+
+# A and B positions using (row, column)
+start = (6, 0)
+goal = (3, 3)
+
+
+def get_neighbors(grid, position):
+    row, col = position
+
+    # Up, Right, Down, Left
+    directions = [
+        (-1, 0),
+        (0, 1),
+        (1, 0),
+        (0, -1)
+    ]
+
+    neighbors = []
+
+    for dr, dc in directions:
+        new_row = row + dr
+        new_col = col + dc
+
+        if (0 <= new_row < len(grid) and
+                0 <= new_col < len(grid[0]) and
+                grid[new_row][new_col] == 0):
+
+            neighbors.append((new_row, new_col))
+
+    return neighbors
+
+
+def bfs_grid(grid, start, goal):
+    queue = deque([(start, [start])])
+    visited = set()
+    traversal = []
+
+    while queue:
+        position, path = queue.popleft()
+
+        if position in visited:
+            continue
+
+        visited.add(position)
+        traversal.append(position)
+
+        if position == goal:
+            return path, traversal
+
+        for neighbor in get_neighbors(grid, position):
+            if neighbor not in visited:
+                queue.append((neighbor, path + [neighbor]))
+
+    return None, traversal
+
+
+def dfs_grid(grid, start, goal):
+    stack = [(start, [start])]
+    visited = set()
+    traversal = []
+
+    while stack:
+        position, path = stack.pop()
+
+        if position in visited:
+            continue
+
+        visited.add(position)
+        traversal.append(position)
+
+        if position == goal:
+            return path, traversal
+
+        neighbors = get_neighbors(grid, position)
+
+        # Reverse so DFS follows the same directional priority
+        for neighbor in reversed(neighbors):
+            if neighbor not in visited:
+                stack.append((neighbor, path + [neighbor]))
+
+    return None, traversal
+
+
+# ============================================================
+# Run Problem 1
+# ============================================================
+
+print("=" * 60)
+print("PROBLEM 1: BFS VS. DFS")
+print("=" * 60)
+
+
+# Part A
+print("\n(a) BFS: Graph A to E")
+
+bfs_path, bfs_traversal = bfs_graph(graph, 'A', 'E')
+
+print("Traversal Order:", " -> ".join(bfs_traversal))
+print("Path Found:", " -> ".join(bfs_path))
+print("Path Length:", len(bfs_path) - 1)
+
+
+# Part B
+print("\n(b) DFS: Graph A to E")
+
+dfs_path, dfs_traversal = dfs_graph(graph, 'A', 'E')
+
+print("Traversal Order:", " -> ".join(dfs_traversal))
+print("Path Found:", " -> ".join(dfs_path))
+print("Path Length:", len(dfs_path) - 1)
+
+
+# Part C
+print("\n(c) BFS: Grid A to B")
+
+bfs_grid_path, bfs_grid_traversal = bfs_grid(grid, start, goal)
+
+print("Traversal Order:", bfs_grid_traversal)
+
+if bfs_grid_path:
+    print("Path Found:", bfs_grid_path)
+    print("Path Length:", len(bfs_grid_path) - 1)
+else:
+    print("No path found.")
+
+
+# Part D
+print("\n(d) DFS: Grid A to B")
+
+dfs_grid_path, dfs_grid_traversal = dfs_grid(grid, start, goal)
+
+print("Traversal Order:", dfs_grid_traversal)
+
+if dfs_grid_path:
+    print("Path Found:", dfs_grid_path)
+    print("Path Length:", len(dfs_grid_path) - 1)
+else:
+    print("No path found.")
+
+
+# ============================================================
+# Comparison
+# ============================================================
+
+print("\n" + "=" * 60)
+print("BFS VS. DFS COMPARISON")
+print("=" * 60)
+
+print("""
+BFS explores nodes level by level using a queue.
+Because of this, BFS finds the shortest path in an
+unweighted graph when a path exists.
+
+DFS explores one branch as deeply as possible before
+backtracking. It uses a stack and generally requires
+less memory than BFS.
+
+BFS may use more memory because it can store many nodes
+in the frontier at the same time. DFS may find a goal
+quickly if it happens to explore the correct branch first,
+but it does not guarantee the shortest path.
+
+The traversal order and path found can therefore be
+different depending on whether BFS or DFS is used.
+""")

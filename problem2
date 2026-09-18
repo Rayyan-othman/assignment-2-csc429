@@ -1,0 +1,174 @@
+# ============================================================
+# Assignment 2 - Problem 2
+# Depth-Limited Search (DLS)
+# ============================================================
+
+# Same grid used in Problem 1
+# 0 = open space
+# 1 = blocked space
+
+grid = [
+    [1, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 0],
+    [1, 0, 0, 0, 0, 0],
+    [1, 0, 1, 1, 0, 0],
+    [1, 0, 1, 0, 0, 0],
+    [0, 1, 1, 0, 0, 0]
+]
+
+# A = starting position
+# B = goal position
+start = (6, 0)
+goal = (3, 3)
+
+
+# ------------------------------------------------------------
+# Get valid neighboring cells
+# ------------------------------------------------------------
+
+def get_neighbors(grid, position):
+    row, col = position
+
+    # Up, Right, Down, Left
+    directions = [
+        (-1, 0),
+        (0, 1),
+        (1, 0),
+        (0, -1)
+    ]
+
+    neighbors = []
+
+    for dr, dc in directions:
+        new_row = row + dr
+        new_col = col + dc
+
+        if (0 <= new_row < len(grid) and
+                0 <= new_col < len(grid[0]) and
+                grid[new_row][new_col] == 0):
+
+            neighbors.append((new_row, new_col))
+
+    return neighbors
+
+
+# ------------------------------------------------------------
+# Depth-Limited Search
+# ------------------------------------------------------------
+
+def depth_limited_search(grid, start, goal, limit):
+
+    expanded_nodes = 0
+
+    def recursive_dls(node, path, depth):
+        nonlocal expanded_nodes
+
+        expanded_nodes += 1
+
+        # Goal test
+        if node == goal:
+            return path
+
+        # Stop searching when depth limit is reached
+        if depth == limit:
+            return None
+
+        for neighbor in get_neighbors(grid, node):
+
+            # Avoid cycles in the current path
+            if neighbor not in path:
+
+                result = recursive_dls(
+                    neighbor,
+                    path + [neighbor],
+                    depth + 1
+                )
+
+                if result is not None:
+                    return result
+
+        return None
+
+    path = recursive_dls(start, [start], 0)
+
+    return path, expanded_nodes
+
+
+# ============================================================
+# Run DLS with limit = 6
+# ============================================================
+
+print("=" * 60)
+print("PROBLEM 2: DEPTH-LIMITED SEARCH")
+print("=" * 60)
+
+print("\nDLS WITH DEPTH LIMIT = 6")
+print("-" * 40)
+
+path6, nodes6 = depth_limited_search(
+    grid,
+    start,
+    goal,
+    6
+)
+
+if path6:
+    print("Goal found!")
+    print("Path:", path6)
+    print("Path Length:", len(path6) - 1)
+else:
+    print("Goal not found within depth limit 6.")
+
+print("Nodes Expanded:", nodes6)
+
+
+# ============================================================
+# Run DLS with limit = 10
+# ============================================================
+
+print("\nDLS WITH DEPTH LIMIT = 10")
+print("-" * 40)
+
+path10, nodes10 = depth_limited_search(
+    grid,
+    start,
+    goal,
+    10
+)
+
+if path10:
+    print("Goal found!")
+    print("Path:", path10)
+    print("Path Length:", len(path10) - 1)
+else:
+    print("Goal not found within depth limit 10.")
+
+print("Nodes Expanded:", nodes10)
+
+
+# ============================================================
+# Comparison
+# ============================================================
+
+print("\n" + "=" * 60)
+print("COMPARISON")
+print("=" * 60)
+
+print("""
+Depth-Limited Search works like DFS, but it stops searching
+a branch when the specified depth limit is reached.
+
+With a smaller depth limit, DLS searches fewer levels and
+may fail to find the goal if the goal is located deeper
+than the limit.
+
+Increasing the depth limit allows DLS to explore deeper
+paths, which can make the search successful. However, a
+larger limit may also cause more nodes to be expanded.
+
+Unlike BFS, DLS does not guarantee the shortest path.
+DLS is similar to DFS because it explores one branch
+deeply before backtracking, but DLS prevents the search
+from continuing past a specified depth.
+""")
